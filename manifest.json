@@ -1,0 +1,24 @@
+{
+  "name": "张小言Days",
+  "short_name": "张小言Days",
+  "description": "每日计划 · 视频拍摄 · 变美 · 记账 · 爆款视频 · 每日新闻 · 看书 · 学习计划",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f0e8",
+  "theme_color": "#f5f0e8",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

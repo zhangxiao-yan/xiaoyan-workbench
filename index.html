@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>张小言工作台</title>
+<title>张小言Days</title>
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="张小言工作台" />
+<meta name="apple-mobile-web-app-title" content="张小言Days" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#f5f0e8" />
 <link rel="manifest" href="/manifest.json" />
@@ -288,7 +288,7 @@ main{flex:1;overflow-y:auto;padding:0 16px 80px}
 <div class="drawer-overlay" id="drawerOverlay"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-head">
-    <div class="name">张小言工作台</div>
+    <div class="name">张小言Days</div>
     <div class="sub">今天也是美好的一天 ✨</div>
   </div>
   <div class="drawer-nav" id="drawerNav">
@@ -968,7 +968,7 @@ const titles={home:'今日聚焦',plan:'每日计划',video:'视频拍摄',beaut
 function switchPanel(name){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
-  document.getElementById('pageTitle').textContent=titles[name]||'张小言工作台';
+  document.getElementById('pageTitle').textContent=titles[name]||'张小言Days';
   document.querySelectorAll('.drawer-item').forEach(n=>n.classList.remove('active'));
   document.querySelector(`.drawer-item[data-panel="${name}"]`)?.classList.add('active');
   document.querySelectorAll('.bottom-item').forEach(n=>n.classList.remove('active'));
