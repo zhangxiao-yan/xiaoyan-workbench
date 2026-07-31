@@ -1309,12 +1309,21 @@ function renderBills(){
     el.appendChild(hd);
     groups[d].forEach(e=>{
       const div=document.createElement('div');div.className='list-item';
-      div.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${catColors[e.cat]||'#ccc'};flex-shrink:0"></span><div class="list-text">${esc(e.desc)}</div><span class="list-tag">${esc(e.cat)}</span><span style="font-size:11px;color:var(--red)">-${fmtNum(e.amount)}</span><button class="task-del" onclick="delBill('${e.id}')">✕</button>`;
+      div.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${catColors[e.cat]||'#ccc'};flex-shrink:0"></span><div class="list-text">${esc(e.desc)}</div><span class="list-tag">${esc(e.cat)}</span><span style="font-size:11px;color:var(--red)">-${fmtNum(e.amount)}</span><button class="task-del" style="background:var(--accent-soft);color:var(--accent);margin-right:4px" onclick="editBillDate('${e.id}')">📅</button><button class="task-del" onclick="delBill('${e.id}')">✕</button>`;
       el.appendChild(div);
     });
   });
 }
 function delBill(id){data.expenses=data.expenses.filter(x=>x.id!==id);save();renderMoney();renderBills();renderHome();toast('已删除');}
+function editBillDate(id){
+  const exp=data.expenses.find(x=>x.id===id);
+  if(!exp)return;
+  const newDate=prompt('请输入新日期（格式：YYYY-MM-DD）\n当前日期：'+(exp.time||'无'),exp.time||today());
+  if(!newDate||!/^\d{4}-\d{2}-\d{2}$/.test(newDate)){toast('日期格式错误');return;}
+  exp.time=newDate;
+  save();renderMoney();renderBills();renderHome();
+  toast('日期已更新为 '+newDate+' ✓');
+}
 document.addEventListener('change',e=>{
   if(e.target.id==='bill-filter-date'||e.target.id==='bill-filter-cat')renderBills();
 });
