@@ -297,6 +297,7 @@ main{flex:1;overflow-y:auto;padding:0 16px 80px}
     <div class="drawer-item" data-panel="video"><span class="drawer-icon">🎬</span>视频拍摄</div>
     <div class="drawer-item" data-panel="beauty"><span class="drawer-icon">💄</span>变美</div>
     <div class="drawer-item" data-panel="money"><span class="drawer-icon">💰</span>记账</div>
+    <div class="drawer-item" data-panel="bills"><span class="drawer-icon">📋</span>账单明细</div>
     <div class="drawer-item" data-panel="hot"><span class="drawer-icon">🔥</span>爆款视频</div>
     <div class="drawer-item" data-panel="news"><span class="drawer-icon">📰</span>每日新闻</div>
     <div class="drawer-item" data-panel="reading"><span class="drawer-icon">📚</span>看书</div>
@@ -580,6 +581,7 @@ main{flex:1;overflow-y:auto;padding:0 16px 80px}
     <!-- 分类饼图 -->
     <div style="margin-top:10px;font-size:12px;font-weight:600">分类支出</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="exp-cat-stats"></div>
+    <button class="btn-add" style="width:100%;margin-top:10px;background:var(--card-soft);color:var(--text)" onclick="showPanel('bills')">📋 查看账单明细 ›</button>
   </div>
   <div class="card" style="text-align:center">
     <div class="card-head"><h3>🚗 买车计划 · 五菱MINI</h3></div>
@@ -595,6 +597,33 @@ main{flex:1;overflow-y:auto;padding:0 16px 80px}
     <div style="font-size:11px;color:var(--text-dim)">还差 <span id="car-remain" style="color:var(--red)">¥41,500</span></div>
     <div class="cheer">每存一笔，离小MINI更近一步 🚗</div>
     <div class="inp-row"><input type="number" id="car-input" placeholder="存入金额" style="width:90px" /><button class="btn-add" onclick="addCarSave()">💾</button></div>
+  </div>
+</section>
+
+<!-- 账单明细 -->
+<section class="panel" id="panel-bills">
+  <div class="card">
+    <div class="card-head"><h3>📋 账单明细</h3></div>
+    <!-- 筛选区 -->
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <select id="bill-filter-date" style="flex:1;min-width:100px;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:12px">
+        <option value="all">全部日期</option>
+      </select>
+      <select id="bill-filter-cat" style="flex:1;min-width:100px;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:12px">
+        <option value="all">全部分类</option>
+        <option value="餐饮">餐饮</option>
+        <option value="购物">购物</option>
+        <option value="交通">交通</option>
+        <option value="娱乐">娱乐</option>
+        <option value="日用">日用</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div class="stat-card" style="flex:1;padding:8px"><div class="stat-num" id="bill-count" style="font-size:16px">0</div><div class="stat-label">笔数</div></div>
+      <div class="stat-card" style="flex:1;padding:8px"><div class="stat-num" id="bill-total" style="font-size:16px;color:var(--red)">¥0</div><div class="stat-label">合计</div></div>
+    </div>
+    <div id="bill-list"></div>
   </div>
 </section>
 
@@ -974,7 +1003,7 @@ document.getElementById('menuBtn').addEventListener('click',()=>{drawer.classLis
 overlay.addEventListener('click',()=>{drawer.classList.remove('open');overlay.classList.remove('show');});
 
 /* 导航切换 */
-const titles={home:'今日聚焦',plan:'每日计划',video:'视频拍摄',beauty:'变美',money:'记账',hot:'爆款视频',news:'每日新闻',reading:'看书',study:'学习',review:'复盘'};
+const titles={home:'今日聚焦',plan:'每日计划',video:'视频拍摄',beauty:'变美',money:'记账',bills:'账单明细',hot:'爆款视频',news:'每日新闻',reading:'看书',study:'学习',review:'复盘'};
 function switchPanel(name){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
@@ -1235,9 +1264,54 @@ function renderMoney(){
   document.getElementById('car-bar').style.width=(data.carSaved/data.carTarget*100)+'%';
   document.getElementById('car-remain').textContent=fmtNum(data.carTarget-data.carSaved);
 }
-function addExp(){const desc=document.getElementById('exp-desc').value.trim(),amt=parseFloat(document.getElementById('exp-amt').value),cat=document.getElementById('exp-cat').value;if(!desc||isNaN(amt)||amt<=0){toast('请填写');return;}data.expenses.unshift({id:uid(),desc,amount:amt,cat,time:today(),timeStr:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});document.getElementById('exp-desc').value='';document.getElementById('exp-amt').value='';save();renderMoney();renderHome();toast('已记录');}
-function delExp(id){data.expenses=data.expenses.filter(x=>x.id!==id);save();renderMoney();renderHome();toast('已删除');}
+function addExp(){const desc=document.getElementById('exp-desc').value.trim(),amt=parseFloat(document.getElementById('exp-amt').value),cat=document.getElementById('exp-cat').value;if(!desc||isNaN(amt)||amt<=0){toast('请填写');return;}data.expenses.unshift({id:uid(),desc,amount:amt,cat,time:today(),timeStr:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});document.getElementById('exp-desc').value='';document.getElementById('exp-amt').value='';save();renderMoney();renderBills();renderHome();toast('已记录');}
+function delExp(id){data.expenses=data.expenses.filter(x=>x.id!==id);save();renderMoney();renderBills();renderHome();toast('已删除');}
 function addCarSave(){const amt=parseFloat(document.getElementById('car-input').value);if(isNaN(amt)||amt<=0){toast('请输入金额');return;}data.carSaved+=amt;document.getElementById('car-input').value='';save();renderMoney();toast(`存入 ${fmtNum(amt)}！`);}
+
+/* 账单明细 */
+function renderBills(){
+  const dateSel=document.getElementById('bill-filter-date');
+  const catSel=document.getElementById('bill-filter-cat');
+  // 收集所有日期
+  const dates=[...new Set(data.expenses.map(e=>e.time).filter(Boolean))].sort().reverse();
+  const curDate=dateSel.value;
+  dateSel.innerHTML='<option value="all">全部日期</option>'+dates.map(d=>`<option value="${d}">${d}</option>`).join('');
+  if(curDate)dateSel.value=curDate;
+  // 筛选
+  const fDate=dateSel.value,fCat=catSel.value;
+  let list=data.expenses.slice().sort((a,b)=>{
+    const da=a.time||'',db=b.time||'';
+    if(da!==db)return db.localeCompare(da);
+    return (b.id||'').localeCompare(a.id||'');
+  });
+  if(fDate!=='all')list=list.filter(e=>e.time===fDate);
+  if(fCat!=='all')list=list.filter(e=>e.cat===fCat);
+  // 统计
+  const total=list.reduce((s,e)=>s+e.amount,0);
+  document.getElementById('bill-count').textContent=list.length;
+  document.getElementById('bill-total').textContent='¥'+fmtNum(total);
+  // 渲染列表 - 按日期分组
+  const el=document.getElementById('bill-list');el.innerHTML='';
+  if(!list.length){el.innerHTML='<div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px">暂无记录</div>';return;}
+  const groups={};
+  list.forEach(e=>{const d=e.time||'未知日期';if(!groups[d])groups[d]=[];groups[d].push(e);});
+  const catColors={'餐饮':'#f5a623','购物':'#e88b9a','交通':'#6a9ae8','娱乐':'#7aab7a','日用':'#c9a06a','其他':'#9a9086'};
+  Object.keys(groups).sort().reverse().forEach(d=>{
+    const dayTotal=groups[d].reduce((s,e)=>s+e.amount,0);
+    const hd=document.createElement('div');hd.style.cssText='display:flex;justify-content:space-between;align-items:center;margin:10px 0 4px;font-size:11px;color:var(--text-soft)';
+    hd.innerHTML=`<span style="font-weight:600">📅 ${d}</span><span style="color:var(--red);font-weight:600">¥${fmtNum(dayTotal)}</span>`;
+    el.appendChild(hd);
+    groups[d].forEach(e=>{
+      const div=document.createElement('div');div.className='list-item';
+      div.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${catColors[e.cat]||'#ccc'};flex-shrink:0"></span><div class="list-text">${esc(e.desc)}</div><span class="list-tag">${esc(e.cat)}</span><span style="font-size:11px;color:var(--red)">-${fmtNum(e.amount)}</span><button class="task-del" onclick="delBill('${e.id}')">✕</button>`;
+      el.appendChild(div);
+    });
+  });
+}
+function delBill(id){data.expenses=data.expenses.filter(x=>x.id!==id);save();renderMoney();renderBills();renderHome();toast('已删除');}
+document.addEventListener('change',e=>{
+  if(e.target.id==='bill-filter-date'||e.target.id==='bill-filter-cat')renderBills();
+});
 
 /* 金价API */
 async function fetchGoldPrice(){
@@ -1411,7 +1485,7 @@ function saveReview(type){
   }});
 });
 
-function renderAll(){renderHome();renderPlan();renderVideo();renderBeauty();renderMoney();renderHot();renderNews();renderRead();renderStudy();}
+function renderAll(){renderHome();renderPlan();renderVideo();renderBeauty();renderMoney();renderBills();renderHot();renderNews();renderRead();renderStudy();}
 renderAll();
 loadSkin();
 
