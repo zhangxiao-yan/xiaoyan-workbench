@@ -1078,7 +1078,7 @@ function renderHome(){
   const planTodo=data.plan.filter(t=>!t.done).length;
   document.getElementById('home-ov-plan').textContent=planTodo?`${planTodo} 项待完成`:`全部完成 🎉`;
 
-  const expToday=data.expenses.filter(e=>!e.time||e.time===today()).reduce((s,e)=>s+e.amount,0);
+  const expToday=data.expenses.filter(e=>!e.time||e.time.includes(':')||e.time===today()).reduce((s,e)=>s+e.amount,0);
   document.getElementById('home-ov-money').textContent=expToday?`今日支出 ${fmtNum(expToday)}`:`今日无支出`;
 
   const sportToday=data.sports.length;
@@ -1222,7 +1222,7 @@ function renderMoney(){
     ce.style.color=chg>=0?'var(--green)':'var(--red)';
   }
   document.getElementById('gold-saved').textContent=data.goldSaved.toLocaleString();
-  const expToday=data.expenses.filter(e=>!e.time||e.time===today()).reduce((s,e)=>s+e.amount,0);
+  const expToday=data.expenses.filter(e=>!e.time||e.time.includes(':')||e.time===today()).reduce((s,e)=>s+e.amount,0);
   document.getElementById('exp-today').textContent=fmtNum(expToday);document.getElementById('exp-budget').textContent=fmtNum(data.budget);
   const over=expToday>data.budget,cheer=document.getElementById('budget-cheer');
   if(expToday===0)cheer.textContent='今天还没有消费记录哦 🌿';
@@ -1230,7 +1230,7 @@ function renderMoney(){
   else cheer.textContent=`还剩 ${fmtNum(data.budget-expToday)}，真棒！💪`;
   cheer.style.background=over?'var(--red-bg)':'var(--green-bg)';cheer.style.color=over?'var(--red)':'var(--green)';
   const el=document.getElementById('exp-list');el.innerHTML='';
-  const todayExpenses=data.expenses.filter(e=>!e.time||e.time===today());
+  const todayExpenses=data.expenses.filter(e=>!e.time||e.time.includes(':')||e.time===today());
   todayExpenses.forEach(e=>{const d=document.createElement('div');d.className='list-item';d.innerHTML=`<div class="list-text">${esc(e.desc)}</div><span class="list-tag">${esc(e.cat)}</span><span style="font-size:11px;color:var(--red)">-${fmtNum(e.amount)}</span><button class="task-del" onclick="delExp('${e.id}')">✕</button>`;el.appendChild(d);});
   // 月度统计
   const nowDate=new Date();
@@ -1270,6 +1270,12 @@ function addCarSave(){const amt=parseFloat(document.getElementById('car-input').
 
 /* 账单明细 */
 function renderBills(){
+  // 修复旧数据：没有日期的记录，从time字段判断，如果time是"HH:MM"格式则视为今天
+  data.expenses.forEach(e=>{
+    if(!e.time||e.time.includes(':')){
+      e.time=today();
+    }
+  });
   const dateSel=document.getElementById('bill-filter-date');
   const catSel=document.getElementById('bill-filter-cat');
   // 收集所有日期
@@ -1456,7 +1462,7 @@ function renderReviews(){
   document.getElementById('review-date').textContent=today();
   document.getElementById('review-week').textContent=getWeek();
   document.getElementById('review-month').textContent=getMonth();
-  document.getElementById('review-stats').innerHTML='📋 计划 '+data.plan.filter(t=>t.done).length+'/'+data.plan.length+' · 🏃 运动 '+data.sports.length+'次 · 💸 '+fmtNum(data.expenses.filter(e=>!e.time||e.time===today()).reduce((s,e)=>s+e.amount,0));
+  document.getElementById('review-stats').innerHTML='📋 计划 '+data.plan.filter(t=>t.done).length+'/'+data.plan.length+' · 🏃 运动 '+data.sports.length+'次 · 💸 '+fmtNum(data.expenses.filter(e=>!e.time||e.time.includes(':')||e.time===today()).reduce((s,e)=>s+e.amount,0));
   const dr=document.getElementById('day-reviews');dr.innerHTML='';
   if(!data.reviews.day.length)dr.innerHTML='<div style="color:var(--text-dim);font-size:12px">暂无</div>';
   else data.reviews.day.slice(-5).reverse().forEach(r=>{const d=document.createElement('div');d.style.cssText='background:var(--card-soft);border-radius:10px;padding:12px;margin-bottom:8px;';d.innerHTML=`<h4 style="font-size:12px;margin-bottom:4px">${r.date}</h4><div style="font-size:11px;line-height:1.6;color:var(--text-soft)"><b style="color:var(--green)">✓ </b>${esc(r.good||'-')}<br/><b style="color:var(--red)">✗ </b>${esc(r.bad||'-')}<br/><b style="color:var(--accent)">→ </b>${esc(r.next||'-')}</div>`;dr.appendChild(d);});
