@@ -735,7 +735,8 @@ const defaultData={
 };
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d)return d;}catch{}return JSON.parse(JSON.stringify(defaultData));}
 let data=load();
-function save(){localStorage.setItem(KEY,JSON.stringify(data));autoSync();}
+if(!data.lastSync)data.lastSync=0;
+function save(){data.lastSync=Date.now();localStorage.setItem(KEY,JSON.stringify(data));autoSync();}
 
 /* ===== GitHub 云同步 ===== */
 const GH_REPO='zhangxiao-yan/xiaoyan-workbench';
@@ -848,8 +849,17 @@ async function githubDownload(manual){
     const j=await resp.json();
     ghSha=j.sha;
     const cloudData=JSON.parse(decodeURIComponent(escape(atob(j.content))));
+    // 比较时间戳：自动下载时只在云端更新时才覆盖，避免本地删除被恢复
+    const cloudTime=cloudData.lastSync||0;
+    const localTime=data.lastSync||0;
+    if(!manual && cloudTime<=localTime){
+      // 云端不比本地新，不覆盖
+      isSyncing=false;
+      return;
+    }
     // 云端数据覆盖本地
     data=cloudData;
+    if(!data.lastSync)data.lastSync=cloudTime;
     localStorage.setItem(KEY,JSON.stringify(data));
     renderAll();
     if(manual)toast('⬇️ 已从云端拉取最新数据 ✓');
